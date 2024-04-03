@@ -1,67 +1,143 @@
-// the buffer is treated as a C-style string
-void    create_list(t_list **list, int fd)
-{
-   int  char_read; //num of chars read by the read() function
-   char *buf; //buffer for readin data from file
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aantonie <aantonie@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/03 15:47:51 by aantonie          #+#    #+#             */
+/*   Updated: 2024/03/09 15:37:24 by aantonie         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-   // scan line if '\n' is present
-   // докато while цикъла търси newline char
-   // аргумента е *list, защото функцияат ще търси в *list
-   while (!found_newline(*list))
-   {
-        buf = malloc(BUFFER_SIZE + 1);
-        if (NULL == buf)
-            return ;
-
-        char_read = read(fd, buf, BUFFER_SIZE);//reads data from a fd into the buffer
-        if (char_read == 0)
-        {
-            free(buf);
-            return ;
-        }
-        buf[char_read] = '\0';
-        // Append the node
-        append(list, buf);
-   } 
-}
-
-
-
-/*
-Reads a line from a file descriptor and returns that line as a dynamically allocated string.  
-*/
 #include "get_next_line.h"
+#include <stdio.h>
 
-char *get_next_line(int fd)
+char	*ft_free(char *buffer, char *buf)
 {
-    static t_list   *list = NULL;
-    char            *next_line;
+	char	*temp;
 
-    // fd are only positives | read gives -1 if there is a problem with reading
-    if (fd < 0 || BUFFER_SIZE <= 0)
-        return NULL;
-
-    // Create my list until I encounter '\n'
-    create_list(&list, fd);
+	temp = ft_strjoin(buffer, buf);
+	return (temp);
 }
 
-int len_to_newline(t_list *list)
+/**
+ * @brief 1. extracts the current line from the buffer
+ * @brief 2. stops when it encounters an '\0' or '\n'
+ * @brief 3. allocates memory for the esxtracted line
+ * @brief 4. returns the exracted line
+ * @note - ! The extracted line
+ * @return pointer to the allocated memory containing the extracted line
+ * @brief 5. Handle eol character - '\0':
+ * - line[i++] = '\n' means we go to the next line
+ */
+char	*ft_extract_line(char *buffer)
 {
-    int i;
-    int len;
+	int		i;
+	char	*line;
 
-    if (list == NULL)
-        return 0;
-    len = 0;
-    while (list)
-    {
-        i = 0;
-        while (/* condition */)
-        {
-            /* code */
-        }
-        
-    }
-    
-    
+	i = 0;
+	if (!buffer[i])
+		return (NULL);
+	while (buffer[i] != '\0' && buffer[i] != '\n')
+		i++;
+	line = ft_calloc(i + 2, sizeof(char));
+	if (!line)
+		return (free(buffer), NULL);
+	i = 0;
+	while (buffer[i] != '\0' && buffer[i] != '\n')
+	{
+		line[i] = buffer[i];
+		i++;
+	}
+	if (buffer[i] != '\0' && buffer[i] == '\n')
+		line[i++] = '\n';
+	return (line);
+}
+
+/**
+ * @brief 1. skips the current line
+ * @brief 2. extracts the next line from the buffer
+ * @brief 3. stops at the end of the buffer or the next '\n'
+ * @brief 4. allocates memory for the extracted line
+ * @brief 5. frees the memory of the current buffer
+ * @return pointer to the allocated memory containing the extracted next line
+ */
+char	*ft_next_line(char *buffer)
+{
+	int		i;
+	int		j;
+	char	*new_line;
+
+	i = 0;
+	while (buffer[i] != '\0' && buffer[i] != '\n')
+		i++;
+	if (buffer[i] == '\0')
+	{
+		free(buffer);
+		return (NULL);
+	}
+	new_line = ft_calloc(ft_strlen(buffer) - i + 1, sizeof(char));
+	if (!new_line)
+		return (free(buffer), NULL);
+	i++;
+	j = 0;
+	while (buffer[i] != '\0')
+	{
+		new_line[j] = buffer[i];
+		j++;
+		i++;
+	}
+	free(buffer);
+	return (new_line);
+}
+
+/**
+ * @note 1. ft_calloc(1, 1)
+ - effectively creates an empty string.
+ - allocates memory for a single character and initializes it to '\0'
+ - call is used to allocate memory for an empty string.
+ * @brief 4. create a buffer and allocate memory for it( +1 is for '\0')
+ * @brief 5. if no bytes are read -> free the buffer
+ * @brief 6. read() reaturns -1 if an error occurs while reading the file
+ */
+char	*read_from_file(int fd, char *line)
+{
+	int		byte_read;
+	char	temp[BUFFER_SIZE + 1];
+
+	byte_read = 1;
+	while (byte_read > 0)
+	{
+		byte_read = read(fd, temp, BUFFER_SIZE);
+		if (byte_read < 0)
+		{
+			free(line);
+			return (NULL);
+		}
+		temp[byte_read] = '\0';
+		line = ft_strjoin(line, temp);
+		if (ft_strchr(temp, '\n'))
+			break ;
+	}
+	return (line);
+}
+
+/**
+ * @brief 1. creates a buffer, that stores the whole text in the file
+ * @brief 2. the content of the string that buffer points to is what changes.
+ */
+char	*get_next_line(int fd)
+{
+	static char	*buffer;
+	char		*current_line;
+
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
+	buffer = read_from_file(fd, buffer);
+	if (buffer == NULL)
+		return (NULL);
+	current_line = ft_extract_line(buffer);
+	buffer = ft_next_line(buffer);
+	return (current_line);
 }

@@ -5,38 +5,31 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: aantonie <aantonie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/27 13:26:45 by aantonie          #+#    #+#             */
-/*   Updated: 2023/11/27 15:15:26 by aantonie         ###   ########.fr       */
+/*   Created: 2024/02/26 23:09:25 by aantonie          #+#    #+#             */
+/*   Updated: 2024/03/06 20:00:00 by aantonie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
-#ifndef BUFFER_SIZE
-# define BUFFER_SIZE 10
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 42
+# endif
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <stddef.h>
+# include <fcntl.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+# include <unistd.h>
 
-// node of the linked list
-typedef struct s_list
-{
-    char    *str_buf;
-    struct s_list   *next_str;   
-}               t_list;
+char	*get_next_line(int fd);
 
-int     found_newline(t_list *list);
-t_list  *find_last_node(t_list *list);
-char    *get_line(t_list *list);
-void    copy_string(t_list, char *str);
-int     len_to_newline(t_list)
-
-
-
-
-
-
+// utils
+void	*ft_calloc(size_t count, size_t size);
+void	*ft_bzero(void *str, size_t n);
+char	*ft_strchr(char *s, int c);
+char	*ft_strjoin(char *str1, char *str2);
+size_t	ft_strlen(char *s);
 
 #endif
